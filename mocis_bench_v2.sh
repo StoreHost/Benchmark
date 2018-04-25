@@ -24,8 +24,10 @@ overlay=0
 language=0
 LeckMich="False"
 scriptname="mocis_bench_v2.sh"
+path="/usr/local/bin"
+updateurl="dev.mocis.sh/$scriptname"
 installedname="mocis"
-benchverion="0.01"
+benchverion="0.010"
 #######################
 #   Function         #
 #######################
@@ -79,7 +81,7 @@ function _helptxt() {
 ########################################################################
 function _installlocal() {
   if [ ! -f /usr/local/bin/mocis ]; then
-    _show_missing
+    #_show_missing
     install $scriptname /usr/local/bin/mocis
     green "Installation Done"
   else
@@ -107,6 +109,14 @@ function _spin() {
     printf "\b${sp:i++%${#sp}:1}"
   done
  }
+
+########################################################################
+# update                                                               #
+########################################################################
+function _update {
+  rm $path/mocis
+  wget -q $updateurl && bash $scriptname -i && mocis -v
+}
 ########################################################################
 #   Check OS                                                           #
 ########################################################################
@@ -138,6 +148,80 @@ fi
 if [[ -z $swap ]]; then
   swap="Empty"
 fi
+if [ ! -f /tmp/100MB.zip ]; then
+  wget -q http://100mb.mocis.sh/100MB.zip -P /tmp/
+else
+  echo ""
+fi
+########################################################################
+#   Binary Installer                                                   #
+########################################################################
+function _install_binarys {
+
+green_ne "Install dialog: "  && $pmgr -y install dialog >/dev/null &&
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+  yellowb  " [Ok]"
+else
+  redb " [failed]"
+fi
+
+green_ne "Install curl:   "  && $pmgr install curl >/dev/null &&
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+yellowb  " [Ok]"
+else
+redb " [failed]"
+fi
+
+green_ne "Install wget:   "  && $pmgr -y install wget >/dev/null &&
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+  yellowb  " [Ok]"
+else
+  redb " [failed]"
+fi
+
+green_ne "Install wput:   "  && $pmgr -y install wput >/dev/null &&
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+  yellowb  " [Ok]"
+else
+  redb " [failed]"
+fi
+
+  green_ne "Install openssl:"  && $pmgr -y install openssl >/dev/null &&
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+  yellowb  " [Ok]"
+else
+  redb " [failed]"
+fi
+
+green_ne "Install hdparm: "  && $pmgr -y install hdparm >/dev/null &&
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+  yellowb  " [Ok]"
+else
+  redb " [failed]"
+fi
+
+green_ne "Install ioping: "  && $pmgr -y install ioping >/dev/null &&
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+  yellowb  " [Ok]"
+else
+  redb " [failed]"
+fi
+
+green_ne "Install bc:     "  && $pmgr -y install bc >/dev/null &&
+RESULT=$?
+if [ $RESULT -eq 0 ]; then
+  yellowb  " [Ok]"
+else
+  redb " [failed]"
+fi
+}
 ########################################################################
 #   Next                                                               #
 ########################################################################
@@ -197,6 +281,10 @@ _log() {
 
  function green {
    echo -e "${green}${1}${end}"
+ }
+
+ function green_ne {
+   echo -ne "${green}${1}${end}"
  }
 
  function greenb {
@@ -323,7 +411,7 @@ function _show_missing() {
     green "Do you wish to install missing programs??"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) $pmgr install dialog curl wget openssl hdparm wput ioping bc -y > /dev/null ; break;;
+            Yes ) _install_binarys ; break;;
             No ) red "some scripts would not work!"; break;;
         esac
     done
@@ -643,16 +731,13 @@ function _speed_v6() {
 #   Network upload speedtest    #
 #################################
 function _ul_speed_v4() {
-  if [ ! -f /tmp/101MB.zip ]; then
-    wget -q -O 101MB.zip http://100mb.mocis.sh/100MB.zip -P /tmp/
-  fi
-  local speedtest=$(wput −−no−directories -u --basename=/tmp/ 101MB.zip /tmp/101MB.zip $1 2>&1 | awk ' {speed=$8} END {gsub(/\(|\)/,"",speed); print speed}')
+  local speedtest=$(wput −−no−directories -u --basename=/tmp/ 100MB.zip /tmp/100MB.zip $1 2>&1 | awk ' {speed=$8} END {gsub(/\(|\)/,"",speed); print speed}')
   local nodeName=$2
   lightblue "${nodeName} ${speedtest}"
 }
 function _ul_v4() {
-  _ul_speed_v4  'ftp://mocis_public:public@88.99.220.42/' 'StoreHost, Germany, DE'
-  _ul_speed_v4  'ftp://speedtest.tele2.net/upload/' 'Tele2, Germany, DE'
+#  _ul_speed_v4  'ftp://mocis_public:public@88.99.220.42/' 'StoreHost, Germany, DE'
+#  _ul_speed_v4  'ftp://speedtest.tele2.net/upload/' 'Tele2, Germany, DE'
   _ul_speed_v4  'ftp://ams-speedtest-1.tele2.net/upload/' 'Tele2, Netherlands, NL'
   _ul_speed_v4  'ftp://kst5-speedtest-1.tele2.net/upload/' 'Tele2, Sweden, SE'
 }
@@ -878,7 +963,7 @@ function _commandmenu() {
   echo " "
   green "Performing RSA test" | _log
   _next
-  _cpursa | _log
+  #_cpursa | _log
   red "We skip this for now...." | _log
   #_cputest | _log
   ###################################################################### IPv4 Speedtest
@@ -918,16 +1003,17 @@ _display_help() {
     _printPoweredBy
     _helptxt
     echo
-    echo "   -h, --help                   Help"
-    echo "   -c, --command                Command Line Benchmark"
-    echo "   -d, --dialog                 Dialog Benchmark "
-    echo "   -fs, --free-space            Calculate the free Space on the Server"
-    echo "   -i, --install                Install to System"
-    echo "   -m, --missing                Shows missing Dependencies"
-    echo "   -v, --version                Shows the actual version"
-    echo "   -speed-v4, --speed-test-v4   Performing IPv4 Speedtest"
-    echo "   -speed-v6, --speed-test-v6   Performing IPv6 Speedtest"
-    echo "              --upload-test-v4  Performing IPv4 Uploadspeedtest"
+    echo "   -c,        --command               Command Line Benchmark"
+    echo "   -d,        --dialog                Dialog Benchmark "
+    echo "   -fs,       --free-space            Calculate the free Space on the Server"
+    echo "   -h,        --help                  Help"
+    echo "   -i,        --install               Install to System"
+    echo "   -m,        --missing               Shows missing Dependencies"
+    echo "   -speed-v4, --speed-test-v4         Performing IPv4 Speedtest"
+    echo "   -speed-v6, --speed-test-v6         Performing IPv6 Speedtest"
+    echo "   -u,        --update                Update to the newest Version"
+    echo "              --upload-test-v4        Performing IPv4 Uploadspeedtest"
+    echo "   -v,        --version               Shows the actual version"
     echo
     # echo some stuff here for the -a or --add-options
     exit 1
@@ -954,6 +1040,7 @@ do
           _installlocal
           exit 0
           ;;
+
       -m | --missing)
           _show_missing
           exit 0
@@ -969,19 +1056,15 @@ do
           exit 0
           ;;
 
-
-      -v | --version)
-          echo "Version $benchverion is installed"
+      -fs | --free-space)
+          green "Calc Diskspace" | _log
+          #_calc_disk
+          _next
+          yellow "Total Disk Space:${greenb} $disk_total_size ${yellow}GB ${PLAIN}"
+          yellow "Total Disk Used:${greenb}  $disk_used_size ${yellow}GB Used"
           exit 0
           ;;
 
-          --upload-test-v4)
-          green "Performing IPv4 Downloadtest" && _next
-          lightblue "Node Name | Download Speed"
-          echo ""
-          _ul_v4
-          exit 0
-          ;;
 
       -speed-v4 | --speed-test-v4)
           green "Performing IPv4 Downloadtest" | _next
@@ -1002,12 +1085,46 @@ do
           exit 0
           ;;
 
-      -fs | --free-space)
-          green "Calc Diskspace" | _log
-          #_calc_disk
-          _next
-          yellow "Total Disk Space:${greenb} $disk_total_size ${yellow}GB ${PLAIN}"
-          yellow "Total Disk Used:${greenb}  $disk_used_size ${yellow}GB Used"
+
+      -sys | --systeminfo)
+          green "Gathering system information" | _log
+          _next | _log
+          _systeminformation
+          _geoip
+          yellow "CPU Name   ${greenb}   $cname" | _log
+          yellow "Distribution: ${greenb} $opsy" | _log
+          yellow "Kernel:      ${greenb}  $kernel" | _log
+          yellow "Uptime:    ${greenb}  $up" | _log
+          yellow "Load:      ${greenb}   $load_avarage" | _log
+          yellow "CPU Cores:  ${greenb}   $cores" | _log
+          yellow "CPU Freq:  ${greenb}   $freq MHz" | _log
+          yellow "RAM:       ${greenb}    $tram MB" | _log
+          yellow "Swap:     ${greenb}     $swap MB" | _log
+          yellow "Swap used:  ${greenb}   $uswap MB" | _log
+          yellow "Vendor:     ${greenb}   $vendor" | _log
+          yellow "IPv4          ${greenb} $ipv4"
+          yellow "IPv6          ${greenb} $ipv6"
+          yellow "ISP          ${greenb}  $isp" | _log
+          yellow "ASNetwork:   ${greenb}  $asnetwork" | _log
+          exit 0
+          ;;
+
+      -u | --update)
+          green "getting the newest version..."
+          _update
+          exit 0
+          ;;
+
+      --upload-test-v4)
+          green "Performing IPv4 Uploadtest" && _next
+          lightblue "Node Name | Upload Speed"
+          echo ""
+          _ul_v4
+          exit 0
+          ;;
+
+      -v | --version)
+          echo "Version $benchverion is installed"
           exit 0
           ;;
 
