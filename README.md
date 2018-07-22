@@ -1,13 +1,17 @@
 # Benchmark
 ###Features
 
+- Multi Lingual (German, English)
 - Supports CentOS, Debian, Ubuntu, and much more;
 - Does CPU, Upload, Download, Disk and Latency Test;
-- Dialog or Commandpromt Interface;
 - Easy to expand;
 - EU and US  Support;
 - Creates Log to see on a later point;
 - Open and Transparent;
+
+![Alt text](img/missing.PNG?raw=true "Missing")
+![Alt text](img/normal-1.PNG?raw=true "Missing")
+![Alt text](img/normal-2.PNG?raw=true "Missing")
 
 # Download
 Download via wget:
