@@ -12,15 +12,9 @@
 # Download
 Download via wget:
 
-    wget -q dev.mocis.sh/mocis_bench_v2.sh && bash mocis_bench_v2.sh
-
-Download via wget and install:
-
-    wget -q dev.mocis.sh/mocis_bench_v2.sh && bash mocis_bench_v2.sh -i
-
-Download, Install and launch it:
-
-	wget -q dev.mocis.sh/mocis_bench_v2.sh && bash mocis_bench_v2.sh -i && mocis 
+    wget -q dev.mocis.sh/mocis_bench.sh
+    chmod 777 mocis_bench.sh
+    ./mocis_bench.sh
 
 #Possible Arguments
 
